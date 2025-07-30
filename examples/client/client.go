@@ -50,7 +50,7 @@ func init() {
 }
 
 func main() {
-	addr := flag.String("addr", "localhost:3868", "address in form of ip:port to connect to")
+	addr := flag.String("addr", "localhost:3968", "address in form of ip:port to connect to")
 	ssl := flag.Bool("ssl", false, "connect to server using tls")
 	host := flag.String("diam_host", "client", "diameter identity host")
 	realm := flag.String("diam_realm", "go-diameter", "diameter identity realm")
@@ -60,7 +60,7 @@ func main() {
 	bench := flag.Bool("bench", false, "benchmark the server by sending ACR messages")
 	benchCli := flag.Int("bench_clients", 1, "number of client connections")
 	benchMsgs := flag.Int("bench_msgs", 1000, "number of ACR messages to send")
-	networkType := flag.String("network_type", "tcp", "protocol type tcp/sctp")
+	networkType := flag.String("network_type", "sctp", "protocol type tcp/sctp")
 
 	flag.Parse()
 	if len(*addr) == 0 {

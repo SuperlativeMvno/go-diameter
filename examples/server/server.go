@@ -32,12 +32,13 @@ import (
 )
 
 func main() {
-	addr := flag.String("addr", ":3868", "address in the form of ip:port to listen on")
+	addr := flag.String("addr", ":3968", "address in the form of ip:port to listen on")
 	ppaddr := flag.String("pprof_addr", ":9000", "address in form of ip:port for the pprof server")
 	host := flag.String("diam_host", "server", "diameter identity host")
 	realm := flag.String("diam_realm", "go-diameter", "diameter identity realm")
 	certFile := flag.String("cert_file", "", "tls certificate file (optional)")
 	keyFile := flag.String("key_file", "", "tls key file (optional)")
+	networkType := flag.String("network_type", "sctp", "protocol type tcp/sctp")
 	silent := flag.Bool("s", false, "silent mode, useful for benchmarks")
 	flag.Parse()
 

@@ -32,7 +32,7 @@ package main
 */
 
 import (
-	"errors"
+	//	"errors"
 	"flag"
 	"log"
 	"math/rand"
@@ -45,7 +45,7 @@ import (
 	"github.com/fiorix/go-diameter/v4/diam/datatype"
 	"github.com/fiorix/go-diameter/v4/diam/dict"
 	"github.com/fiorix/go-diameter/v4/diam/sm"
-	"github.com/fiorix/go-diameter/v4/diam/sm/smpeer"
+	// "github.com/fiorix/go-diameter/v4/diam/sm/smpeer"
 )
 
 func init() {
@@ -53,10 +53,12 @@ func init() {
 }
 
 var (
-	addr            = flag.String("addr", "192.168.60.145:3868", "address in form of ip:port to connect to")
-	host            = flag.String("diam_host", "magma-oai.openair4G.eur", "diameter identity host")
-	realm           = flag.String("diam_realm", "openair4G.eur", "diameter identity realm")
-	networkType     = flag.String("network_type", "sctp", "protocol type tcp/sctp/tcp4/tcp6/sctp4/sctp6")
+	addr            = flag.String("addr", "172.16.4.244:3868", "address in form of ip:port to connect to")
+	host            = flag.String("diam_host", "testclient", "diameter identity host")
+	realm           = flag.String("diam_realm", "mnc001.mcc001.3gppnetwork.org", "diameter identity realm")
+	destHost        = flag.String("dest_host", "testserver", "diameter destination host")
+	destRealm       = flag.String("dest_realm", "mnc001.mcc001.3gppnetwork.org", "diameter identity realm")
+	networkType     = flag.String("network_type", "tcp", "protocol type tcp/sctp/tcp4/tcp6/sctp4/sctp6")
 	retries         = flag.Uint("retries", 3, "Maximum number of retransmits")
 	watchdog        = flag.Uint("watchdog", 5, "Diameter watchdog interval in seconds. 0 to disable watchdog.")
 	vendorID        = flag.Uint("vendor", 10415, "Vendor ID")
@@ -77,6 +79,8 @@ func main() {
 	cfg := &sm.Settings{
 		OriginHost:       datatype.DiameterIdentity(*host),
 		OriginRealm:      datatype.DiameterIdentity(*realm),
+		DestHost:         datatype.DiameterIdentity(*destHost),
+		DestRealm:        datatype.DiameterIdentity(*destRealm),
 		VendorID:         datatype.Unsigned32(*vendorID),
 		ProductName:      "go-diameter-s6a",
 		OriginStateID:    datatype.Unsigned32(time.Now().Unix()),
@@ -160,17 +164,17 @@ func printErrors(ec <-chan *diam.ErrorReport) {
 
 // Create & send Authentication-Information Request
 func sendAIR(c diam.Conn, cfg *sm.Settings) error {
-	meta, ok := smpeer.FromContext(c.Context())
-	if !ok {
-		return errors.New("peer metadata unavailable")
-	}
+	//meta, ok := smpeer.FromContext(c.Context())
+	//if !ok {
+	//	return errors.New("peer metadata unavailable")
+	//}
 	sid := "session;" + strconv.Itoa(int(rand.Uint32()))
 	m := diam.NewRequest(diam.AuthenticationInformation, diam.TGPP_S6A_APP_ID, dict.Default)
 	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
-	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
-	m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, cfg.DestRealm)
+	m.NewAVP(avp.DestinationHost, avp.Mbit, 0, cfg.DestHost)
 	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
 	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
 	m.NewAVP(avp.VisitedPLMNID, avp.Vbit|avp.Mbit, uint32(*vendorID), datatype.OctetString(*plmnID))
@@ -267,17 +271,17 @@ type ULA struct {
 
 // Create & send Update-Location Request
 func sendULR(c diam.Conn, cfg *sm.Settings) error {
-	meta, ok := smpeer.FromContext(c.Context())
-	if !ok {
-		return errors.New("peer metadata unavailable")
-	}
+	//meta, ok := smpeer.FromContext(c.Context())
+	//if !ok {
+	//	return errors.New("peer metadata unavailable")
+	//}
 	sid := "session;" + strconv.Itoa(int(rand.Uint32()))
 	m := diam.NewRequest(diam.UpdateLocation, diam.TGPP_S6A_APP_ID, dict.Default)
 	m.NewAVP(avp.SessionID, avp.Mbit, 0, datatype.UTF8String(sid))
 	m.NewAVP(avp.OriginHost, avp.Mbit, 0, cfg.OriginHost)
 	m.NewAVP(avp.OriginRealm, avp.Mbit, 0, cfg.OriginRealm)
-	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, meta.OriginRealm)
-	m.NewAVP(avp.DestinationHost, avp.Mbit, 0, meta.OriginHost)
+	m.NewAVP(avp.DestinationRealm, avp.Mbit, 0, cfg.DestRealm)
+	m.NewAVP(avp.DestinationHost, avp.Mbit, 0, cfg.DestHost)
 	m.NewAVP(avp.UserName, avp.Mbit, 0, datatype.UTF8String(*ueIMSI))
 	m.NewAVP(avp.AuthSessionState, avp.Mbit, 0, datatype.Enumerated(0))
 	m.NewAVP(avp.RATType, avp.Mbit, uint32(*vendorID), datatype.Enumerated(1004))
